@@ -93,23 +93,22 @@ func main() {
 }
 
 func GetData(config Configuration, client *http.Client, screen *gc.Window, uploadBar *gc.Window, downloadBar *gc.Window) {
-	var maxUp float64 = 0
-	var maxDown float64 = 0
+	var maxValue float64 = 0
 
 	login(config.Url, config.Username, config.Password, client)
 
 	for {
 		latency, upload, download := getInfo(config.Url, config.Site, client)
 		//keeping the max value
-		maxUp = math.Max(upload, maxUp)
-		maxDown = math.Max(download, maxDown)
+		maxValue = math.Max(upload, maxValue)
+		maxValue = math.Max(download, maxValue)
 
 		//getting the speed in mbps
 		readableUpload := Round(bytesToMebibit(upload), 0.01)
 		readableDownload := Round(bytesToMebibit(download), 0.01)
 
-		maxUploadPercent := (upload / maxUp) * 100
-		maxDownloadPercent := (download / maxDown) * 100
+		maxUploadPercent := (upload / maxValue) * 100
+		maxDownloadPercent := (download / maxValue) * 100
 
 		//fmt.Println(latency, "ms");
 		//fmt.Println("Upload ", readableUpload, "mbps", maxUploadPercent, "% from max upload")
