@@ -110,27 +110,12 @@ func GetData(config Configuration, client *http.Client, screen *gc.Window, uploa
 		maxUploadPercent := (upload / maxValue) * 100
 		maxDownloadPercent := (download / maxValue) * 100
 
-		//fmt.Println(latency, "ms");
-		//fmt.Println("Upload ", readableUpload, "mbps", maxUploadPercent, "% from max upload")
-		//fmt.Println("Download", readableDownload, "mbps", maxDownloadPercent, "% from max download")
 
 		maxY, maxX := screen.MaxYX()
 
-		/*
-		uploadBar.Erase()
-		uploadBar.Refresh()
-		newUploadHeight, newUploadY := CalculateNewHeightAndY(maxUploadPercent, maxY)
-		_, uploadWidth := uploadBar.MaxYX()
-		_, uploadX := uploadBar.YX()
-		uploadBar.Resize(newUploadHeight, uploadWidth)
-		uploadBar.MoveWindow(newUploadY, uploadX)
-		uploadBar.Border(gc.ACS_VLINE, gc.ACS_VLINE, gc.ACS_HLINE, gc.ACS_HLINE,
-			gc.ACS_ULCORNER, gc.ACS_URCORNER, gc.ACS_LLCORNER, gc.ACS_LRCORNER)
-		uploadBar.MovePrint(0, 0, "Upload: "+strconv.FormatFloat(readableUpload, 'f', 2, 64)+"mbps")
-		uploadBar.Refresh()
-		*/
-		uploadText := "Upload: " + strconv.FormatFloat(readableUpload, 'f', 2, 64) + "mbps"
-		downloadText := "Download: " + strconv.FormatFloat(readableDownload, 'f', 2, 64) + "mbps";
+		uploadText := "Ul: " + strconv.FormatFloat(readableUpload, 'f', 2, 64) + "mbps"
+		downloadText := "Dl: " + strconv.FormatFloat(readableDownload, 'f', 2, 64) + "mbps";
+		latencyText := "Latency: "+strconv.FormatFloat(latency, 'f', 0, 64)+"ms"
 
 		screen.Erase()
 		screen.Refresh()
@@ -138,12 +123,13 @@ func GetData(config Configuration, client *http.Client, screen *gc.Window, uploa
 
 		UpdateBar(downloadBar, maxDownloadPercent, maxY, 1)
 
+		textXOffset := -8
 		screen.ColorOn(4)
-		screen.MovePrint(maxY/2-1, maxX/2-4, uploadText)
+		screen.MovePrint(maxY/2-1, maxX/2 + textXOffset, uploadText)
 		screen.ColorOn(3)
-		screen.MovePrint(maxY/2, maxX/2-4, downloadText)
+		screen.MovePrint(maxY/2, maxX/2 + textXOffset, downloadText)
 		screen.ColorOff(3)
-		screen.MovePrint(maxY/2+1, maxX/2-4, "Latency: "+strconv.FormatFloat(latency, 'f', 0, 64)+"ms")
+		screen.MovePrint(maxY/2+1, maxX/2 + textXOffset, latencyText)
 
 		screen.Refresh()
 		time.Sleep(1 * time.Second)
