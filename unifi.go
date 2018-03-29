@@ -69,12 +69,13 @@ func main() {
 		panic(err)
 	}
 
-	upload, err := gc.NewWindow(maxHeight, maxWidth, 0, 10)
+	sideMargin := 3
+	upload, err := gc.NewWindow(maxHeight, maxWidth, 0, sideMargin)
 	if (err != nil ) {
 		panic(err)
 	}
 
-	download, err := gc.NewWindow(maxHeight, maxWidth, 0, maxX-maxWidth-10)
+	download, err := gc.NewWindow(maxHeight, maxWidth, 0, maxX-maxWidth-sideMargin)
 	if (err != nil ) {
 		panic(err)
 	}
