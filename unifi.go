@@ -103,7 +103,7 @@ func StartApp(configFile string) {
 	maxY, maxX := stdscr.MaxYX()
 
 	maxHeight := int(float64(maxY) * 1)
-	maxWidth := int(float64(maxX) * 0.2)
+	maxWidth := int(float64(maxX) * 0.1)
 
 	fmt.Println("maxx", maxX, "maxy", maxY)
 
@@ -193,8 +193,8 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	//keeping the max value
 
 	//getting the speed in mbps
-	readableUpload := Round(bytesToMebibit(upload), 0.01)
-	readableDownload := Round(bytesToMebibit(download), 0.01)
+	readableUpload := bytesToMebibit(upload)
+	readableDownload := bytesToMebibit(download)
 
 	maxUploadPercent := (upload / maxValue) * 100
 	maxDownloadPercent := (download / maxValue) * 100
@@ -204,6 +204,15 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	//uploadText := "Ul: " + strconv.FormatFloat(readableUpload, 'f', 2, 64) + "mbps"
 	//downloadText := "Dl: " + strconv.FormatFloat(readableDownload, 'f', 2, 64) + "mbps";
 	latencyText := "Latency: " + strconv.FormatFloat(latency, 'f', 0, 64) + "ms"
+	speedText := "Speeds (mbps)"
+
+
+	// If we have more than 4 digits, we convert to gbps, we have time to see up to tbps //todo: remind me in 50 years
+	if readableDownload >= 1000 || readableUpload >= 1000{
+		readableDownload /= 1000
+		readableUpload /= 1000
+		speedText = "Speeds (gbps)"
+	}
 
 	uploadText := "^" + strconv.FormatFloat(readableUpload, 'f', 2, 64)
 	downloadText := "-" + strconv.FormatFloat(readableDownload, 'f', 2, 64)
@@ -220,9 +229,12 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	//screen.ColorOn(CYAN_BLACK)
 	//screen.MovePrint(maxY/2, maxX/2+textXOffset, downloadText)
 	//screen.ColorOff(CYAN_BLACK)
-	speedText := "Speeds (mbps)"
 	screen.MovePrint(maxY/2+7, maxX/2-len(latencyText)/2, latencyText)
 	screen.MovePrint(maxY/2-7, maxX/2-len(speedText)/2, speedText)
+
+
+	uploadText = StripDigitsForDisplay(uploadText)
+	downloadText = StripDigitsForDisplay(downloadText)
 
 	PrintDigit(uploadText, BLUE_BLACK, maxX/2-(len(uploadText)*6)/2, maxY/2-6, screen)
 	PrintDigit(downloadText, CYAN_BLACK, maxX/2-(len(uploadText)*6)/2, maxY/2, screen)
@@ -343,6 +355,16 @@ func login(url string, username string, password string, client *http.Client) er
 }
 
 // digit printing functions
+
+func StripDigitsForDisplay(digit string) string {
+
+	digit = digit[0:5]
+	if digit[len(digit)-1] == '.' {
+		digit = digit[0:4]
+	}
+
+	return digit
+}
 
 func PrintDigit(digit string, color int16, x int, y int, screen *gc.Window) {
 	screen.ColorOn(color)
