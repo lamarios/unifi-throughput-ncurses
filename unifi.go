@@ -112,11 +112,11 @@ func StartApp(configFile string) {
 		panic(err)
 	}
 
-	if err := gc.InitPair(BLUE, gc.C_BLUE, gc.C_BLUE); err != nil {
+	if err := gc.InitPair(BLUE, gc.C_MAGENTA, gc.C_MAGENTA); err != nil {
 		panic(err)
 	}
 
-	if err := gc.InitPair(BLUE_BLACK, gc.C_BLUE, gc.C_BLACK); err != nil {
+	if err := gc.InitPair(BLUE_BLACK, gc.C_MAGENTA, gc.C_BLACK); err != nil {
 		panic(err)
 	}
 
