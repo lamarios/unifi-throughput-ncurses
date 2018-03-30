@@ -96,10 +96,17 @@ func GetData(config Configuration, client *http.Client, screen *gc.Window, uploa
 	var maxUp float64 = 0
 	var maxDown float64 = 0
 
-	login(config.Url, config.Username, config.Password, client)
+	if err := login(config.Url, config.Username, config.Password, client); err  != nil {
+		panic(err)
+	}
 
 	for {
-		latency, upload, download := getInfo(config.Url, config.Site, client)
+		latency, upload, download, err := getInfo(config.Url, config.Site, client)
+		if err != nil {
+			ShowErrorScreen(screen)
+		}else{
+
+		}
 		//keeping the max value
 		maxUp = math.Max(upload, maxUp)
 		maxDown = math.Max(download, maxDown)
@@ -151,6 +158,12 @@ func GetData(config Configuration, client *http.Client, screen *gc.Window, uploa
 	}
 }
 
+
+
+func ShowErrorScreen(window *gc.Window) {
+
+}
+
 func UpdateBar(bar *gc.Window, percent float64, maxY int, color int16) {
 
 	newUploadHeight, newUploadY := CalculateNewHeightAndY(percent, maxY)
@@ -196,12 +209,12 @@ func bytesToMebibit(bytes float64) float64 {
 	return bytes / 131072
 }
 
-func getInfo(url string, site string, client *http.Client) (float64, float64, float64) {
+func getInfo(url string, site string, client *http.Client) (float64, float64, float64, error) {
 
 	resp, err := client.Get(url + "/api/s/" + site + "/stat/health")
 
 	if err != nil {
-		panic(err)
+		return 0, 0, 0, err
 	}
 
 	defer resp.Body.Close()
@@ -220,17 +233,17 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 	upload := data["tx_bytes-r"].(float64)
 	download := data["rx_bytes-r"].(float64)
 	//return strconv.Atoi(www.([]interface{})["latency"]), www["tx_bytes-r"], www["rx_bytes-r"]
-	return latency, upload, download
+	return latency, upload, download, nil
 	//return 0, 0, 0
 }
 
-func login(url string, username string, password string, client *http.Client) {
+func login(url string, username string, password string, client *http.Client) error {
 
 	payload := strings.NewReader("{\n\t\"username\": \"" + username + "\",\n\t\"password\":\"" + password + "\"\n}")
 	resp, err := client.Post(url+"/api/login", "application/json", payload)
 	if err != nil {
 		// handle error
-		panic(err)
+		return err
 	}
 
 	defer resp.Body.Close()
