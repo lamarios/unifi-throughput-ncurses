@@ -219,6 +219,7 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 
 	screen.Erase()
 	screen.Refresh()
+	screen.SetBackground(gc.ColorPair(BLACK))
 	UpdateBar(uploadBar, maxUploadPercent, maxY, BLUE)
 
 	UpdateBar(downloadBar, maxDownloadPercent, maxY, CYAN)
