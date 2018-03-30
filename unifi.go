@@ -19,18 +19,20 @@ import (
 )
 
 type Configuration struct {
-	Username string
-	Password string
-	Site     string
-	Url      string
+	Username      string
+	Password      string
+	Site          string
+	Url           string
+	UploadColor   string
+	DownloadColor string
 }
 
-const CYAN = 1
-const BLUE = 2
-const CYAN_BLACK = 3
-const BLUE_BLACK = 4
+const DOWNLOAD_COLOR = 1
+const UPLOAD_COLOR = 2
+const DOWNLOAD_TEXT_COLOR = 3
+const UPLOAD_TEXT_COLOR = 4
 const BLACK = 5
-const WHITE_RED = 6
+const ERROR_COLOR = 6
 const DEFAULT_CONFIG_FOLDER = "/.config/unifi-throughput"
 const DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_FOLDER + "/config.toml"
 const VERSION = "1.0"
@@ -70,13 +72,33 @@ func CreateDefaultConfig() {
 
 	os.MkdirAll(GetDefaultConfigFolder(), os.ModePerm)
 
-	config := []byte("#Controller URL, do not add tailing /\nurl=\"https://demo.ubnt.com\"\n# Name of the site\nsite = \"default\"\n#credentials to login to the controller\nusername = \"superadmin\"\npassword =\"\"")
+	config := []byte("#Controller URL, do not add tailing /\nurl=\"https://demo.ubnt.com\"\n# Name of the site\nsite = \"default\"\n\n#credentials to login to the controller\nusername = \"superadmin\"\npassword =\"\"\n\n# Colors for the bars and text options: blue, green, yellow, magenta, cyan, red, white\nUploadColor = \"blue\"\nDownloadColor = \"cyan\"")
 	err := ioutil.WriteFile(GetDefaultConfigPath(), config, 0644)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println("Config created at", GetDefaultConfigPath())
 	}
+}
+
+func MapColor(colorText string) int16 {
+	switch colorText {
+	case "blue":
+		return gc.C_BLUE
+	case "red":
+		return gc.C_RED
+	case "green":
+		return gc.C_GREEN
+	case "yellow":
+		return gc.C_YELLOW
+	case "magenta":
+		return gc.C_MAGENTA
+	case "cyan":
+		return gc.C_CYAN
+	default:
+		return gc.C_WHITE
+	}
+
 }
 
 //Runs the actual Application
@@ -107,27 +129,29 @@ func StartApp(configFile string) {
 
 	fmt.Println("maxx", maxX, "maxy", maxY)
 
-	//upload.Color(gc.C_BLUE)
-	if err := gc.InitPair(CYAN, gc.C_CYAN, gc.C_CYAN); err != nil {
+	uploadColor := MapColor(config.UploadColor)
+	downloadColor := MapColor(config.DownloadColor)
+
+	if err := gc.InitPair(DOWNLOAD_COLOR, downloadColor, downloadColor); err != nil {
 		panic(err)
 	}
 
-	if err := gc.InitPair(BLUE, gc.C_MAGENTA, gc.C_MAGENTA); err != nil {
+	if err := gc.InitPair(UPLOAD_COLOR, uploadColor, uploadColor); err != nil {
 		panic(err)
 	}
 
-	if err := gc.InitPair(BLUE_BLACK, gc.C_MAGENTA, gc.C_BLACK); err != nil {
+	if err := gc.InitPair(UPLOAD_TEXT_COLOR, uploadColor, gc.C_BLACK); err != nil {
 		panic(err)
 	}
 
-	if err := gc.InitPair(CYAN_BLACK, gc.C_CYAN, gc.C_BLACK); err != nil {
+	if err := gc.InitPair(DOWNLOAD_TEXT_COLOR, downloadColor, gc.C_BLACK); err != nil {
 		panic(err)
 	}
 	if err := gc.InitPair(BLACK, gc.C_BLACK, gc.C_BLACK); err != nil {
 		panic(err)
 	}
 
-	if err := gc.InitPair(WHITE_RED, gc.C_WHITE, gc.C_RED); err != nil {
+	if err := gc.InitPair(ERROR_COLOR, gc.C_WHITE, gc.C_RED); err != nil {
 		panic(err)
 	}
 
@@ -201,14 +225,11 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 
 	maxY, maxX := screen.MaxYX()
 
-	//uploadText := "Ul: " + strconv.FormatFloat(readableUpload, 'f', 2, 64) + "mbps"
-	//downloadText := "Dl: " + strconv.FormatFloat(readableDownload, 'f', 2, 64) + "mbps";
 	latencyText := "Latency: " + strconv.FormatFloat(latency, 'f', 0, 64) + "ms"
 	speedText := "Speeds (mbps)"
 
-
 	// If we have more than 4 digits, we convert to gbps, we have time to see up to tbps //todo: remind me in 50 years
-	if readableDownload >= 1000 || readableUpload >= 1000{
+	if readableDownload >= 1000 || readableUpload >= 1000 {
 		readableDownload /= 1000
 		readableUpload /= 1000
 		speedText = "Speeds (gbps)"
@@ -220,25 +241,18 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	screen.Erase()
 	screen.Refresh()
 
-	UpdateBar(uploadBar, maxUploadPercent, maxY, BLUE)
+	UpdateBar(uploadBar, maxUploadPercent, maxY, UPLOAD_COLOR)
 
-	UpdateBar(downloadBar, maxDownloadPercent, maxY, CYAN)
+	UpdateBar(downloadBar, maxDownloadPercent, maxY, DOWNLOAD_COLOR)
 
-	//textXOffset := -8
-	//screen.ColorOn(BLUE_BLACK)
-	//screen.MovePrint(maxY/2-1, maxX/2+textXOffset, uploadText)
-	//screen.ColorOn(CYAN_BLACK)
-	//screen.MovePrint(maxY/2, maxX/2+textXOffset, downloadText)
-	//screen.ColorOff(CYAN_BLACK)
 	screen.MovePrint(maxY/2+7, maxX/2-len(latencyText)/2, latencyText)
 	screen.MovePrint(maxY/2-7, maxX/2-len(speedText)/2, speedText)
-
 
 	uploadText = StripDigitsForDisplay(uploadText)
 	downloadText = StripDigitsForDisplay(downloadText)
 
-	PrintDigit(uploadText, BLUE_BLACK, maxX/2-(len(uploadText)*6)/2, maxY/2-6, screen)
-	PrintDigit(downloadText, CYAN_BLACK, maxX/2-(len(uploadText)*6)/2, maxY/2, screen)
+	PrintDigit(uploadText, UPLOAD_TEXT_COLOR, maxX/2-(len(uploadText)*6)/2, maxY/2-6, screen)
+	PrintDigit(downloadText, DOWNLOAD_TEXT_COLOR, maxX/2-(len(uploadText)*6)/2, maxY/2, screen)
 
 	screen.Refresh()
 
@@ -248,8 +262,8 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 func ShowErrorScreen(screen *gc.Window, err error) {
 	screen.Erase()
 	screen.Refresh()
-	screen.ColorOn(WHITE_RED)
-	screen.SetBackground(gc.ColorPair(WHITE_RED))
+	screen.ColorOn(ERROR_COLOR)
+	screen.SetBackground(gc.ColorPair(ERROR_COLOR))
 	screen.Printf("Couldn't connect to the controller, double check the URL and your credentials. Retrying soon \n\n %q", err)
 	screen.Refresh()
 }
@@ -277,7 +291,7 @@ func UpdateBar(bar *gc.Window, percent float64, maxY int, color int16) {
 func CalculateNewHeightAndY(percent float64, maxY int) (int, int) {
 
 	newHeight := int(float64(maxY) * (percent / 100))
-	//fmt.Println("new height", newHeight)
+
 	newY := maxY - newHeight
 	return newHeight, newY
 }
@@ -317,10 +331,9 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 	body, err := ioutil.ReadAll(resp.Body)
 
 	var i interface{}
-	//fmt.Printf("response %q\n", body)
 
 	if err := json.Unmarshal([]byte(body), &i); err != nil {
-		panic(err)
+		return 0, 0, 0, err
 	}
 
 	json, isset := i.(map[string]interface{})["data"]
@@ -334,9 +347,9 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 	latency := data["latency"].(float64)
 	upload := data["tx_bytes-r"].(float64)
 	download := data["rx_bytes-r"].(float64)
-	//return strconv.Atoi(www.([]interface{})["latency"]), www["tx_bytes-r"], www["rx_bytes-r"]
+
 	return latency, upload, download, nil
-	//return 0, 0, 0
+
 }
 
 // login to the controller
@@ -350,8 +363,7 @@ func login(url string, username string, password string, client *http.Client) er
 	}
 
 	defer resp.Body.Close()
-	//body, err := ioutil.ReadAll(resp.Body)
-	//fmt.Printf("response %q\n", body)
+
 	return nil
 }
 
@@ -554,7 +566,7 @@ func PrintUp(x int, y int, screen *gc.Window) int {
 	screen.MovePrint(y+0, x, "   ")
 	screen.MovePrint(y+1, x, "   ")
 	screen.MovePrint(y+2, x, " /#\\ ")
-	screen.MovePrint(y+3, x, "/#/#\\")
+	screen.MovePrint(y+3, x, "/###\\")
 	screen.MovePrint(y+4, x, "   ")
 	screen.MovePrint(y+5, x, "   ")
 
@@ -565,7 +577,7 @@ func PrintDown(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "   ")
 	screen.MovePrint(y+1, x, "   ")
-	screen.MovePrint(y+2, x, "\\#\\#/")
+	screen.MovePrint(y+2, x, "\\###/")
 	screen.MovePrint(y+3, x, " \\#/ ")
 	screen.MovePrint(y+4, x, "   ")
 	screen.MovePrint(y+5, x, "   ")
