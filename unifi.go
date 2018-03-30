@@ -37,21 +37,20 @@ const VERSION = "1.0"
 
 func main() {
 
+	externalConfig := flag.String("config", GetDefaultConfigPath(), "External configuration file location")
+	showVersion := flag.Bool("version", false, "Show version")
+	createConfig := flag.Bool("create-config", false, "Create the default config file "+GetDefaultConfigPath()+" THIS WILL OVERWRITE YOUR CURRENT CONFIG AT THE DEFAULT LOCATION")
+	flag.Parse()
 
-		externalConfig := flag.String("config", GetDefaultConfigPath(), "External configuration file location")
-		showVersion := flag.Bool("version", false, "Show version")
-		createConfig := flag.Bool("create-config", false, "Create the default config file "+GetDefaultConfigPath()+" THIS WILL OVERWRITE YOUR CURRENT CONFIG AT THE DEFAULT LOCATION")
-		flag.Parse()
+	//using external config, skipping the argument switch
 
-		//using external config, skipping the argument switch
-
-		if *showVersion {
-			fmt.Println("Unifi Throughput", VERSION)
-		} else if *createConfig {
-			CreateDefaultConfig()
-		} else {
-			StartApp(*externalConfig)
-		}
+	if *showVersion {
+		fmt.Println("Unifi Throughput", VERSION)
+	} else if *createConfig {
+		CreateDefaultConfig()
+	} else {
+		StartApp(*externalConfig)
+	}
 
 }
 
@@ -152,6 +151,13 @@ func StartApp(configFile string) {
 
 	go GetData(config, client, stdscr, upload, download)
 
+	//loop := true
+	//for loop  {
+	//	switch char := stdscr.GetChar(); char{
+	//	default:
+	//		fmt.Println(char)
+	//	}
+	//}
 	stdscr.GetChar()
 
 }
@@ -195,9 +201,12 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 
 	maxY, maxX := screen.MaxYX()
 
-	uploadText := "Ul: " + strconv.FormatFloat(readableUpload, 'f', 2, 64) + "mbps"
-	downloadText := "Dl: " + strconv.FormatFloat(readableDownload, 'f', 2, 64) + "mbps";
+	//uploadText := "Ul: " + strconv.FormatFloat(readableUpload, 'f', 2, 64) + "mbps"
+	//downloadText := "Dl: " + strconv.FormatFloat(readableDownload, 'f', 2, 64) + "mbps";
 	latencyText := "Latency: " + strconv.FormatFloat(latency, 'f', 0, 64) + "ms"
+
+	uploadText := "^" + strconv.FormatFloat(readableUpload, 'f', 2, 64)
+	downloadText := "-" + strconv.FormatFloat(readableDownload, 'f', 2, 64)
 
 	screen.Erase()
 	screen.Refresh()
@@ -205,13 +214,18 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 
 	UpdateBar(downloadBar, maxDownloadPercent, maxY, CYAN)
 
-	textXOffset := -8
-	screen.ColorOn(BLUE_BLACK)
-	screen.MovePrint(maxY/2-1, maxX/2+textXOffset, uploadText)
-	screen.ColorOn(CYAN_BLACK)
-	screen.MovePrint(maxY/2, maxX/2+textXOffset, downloadText)
-	screen.ColorOff(CYAN_BLACK)
-	screen.MovePrint(maxY/2+1, maxX/2+textXOffset, latencyText)
+	//textXOffset := -8
+	//screen.ColorOn(BLUE_BLACK)
+	//screen.MovePrint(maxY/2-1, maxX/2+textXOffset, uploadText)
+	//screen.ColorOn(CYAN_BLACK)
+	//screen.MovePrint(maxY/2, maxX/2+textXOffset, downloadText)
+	//screen.ColorOff(CYAN_BLACK)
+	speedText := "Speeds (mbps)"
+	screen.MovePrint(maxY/2+7, maxX/2-len(latencyText)/2, latencyText)
+	screen.MovePrint(maxY/2-7, maxX/2-len(speedText)/2, speedText)
+
+	PrintDigit(uploadText, BLUE_BLACK, maxX/2-(len(uploadText)*6)/2, maxY/2-6, screen)
+	PrintDigit(downloadText, CYAN_BLACK, maxX/2-(len(uploadText)*6)/2, maxY/2, screen)
 
 	screen.Refresh()
 
@@ -222,8 +236,8 @@ func ShowErrorScreen(screen *gc.Window, err error) {
 	screen.Erase()
 	screen.Refresh()
 	screen.ColorOn(WHITE_RED)
- 	screen.SetBackground(gc.ColorPair(WHITE_RED))
- 	screen.Printf("Couldn't connect to the controller, double check the URL and your credentials. Retrying soon \n\n %q", err)
+	screen.SetBackground(gc.ColorPair(WHITE_RED))
+	screen.Printf("Couldn't connect to the controller, double check the URL and your credentials. Retrying soon \n\n %q", err)
 	screen.Refresh()
 }
 
@@ -296,16 +310,13 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 		panic(err)
 	}
 
-
-
 	json, isset := i.(map[string]interface{})["data"]
 
-	if !isset ||  len(json.([]interface{})) < 3{
-		return 0,0,0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong")
+	if !isset || len(json.([]interface{})) < 3 {
+		return 0, 0, 0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong")
 	}
 
 	data := json.([]interface{})[2].(map[string]interface{})
-
 
 	latency := data["latency"].(float64)
 	upload := data["tx_bytes-r"].(float64)
@@ -315,7 +326,7 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 	//return 0, 0, 0
 }
 
-// login ti the controller
+// login to the controller
 func login(url string, username string, password string, client *http.Client) error {
 
 	payload := strings.NewReader("{\n\t\"username\": \"" + username + "\",\n\t\"password\":\"" + password + "\"\n}")
@@ -329,4 +340,212 @@ func login(url string, username string, password string, client *http.Client) er
 	//body, err := ioutil.ReadAll(resp.Body)
 	//fmt.Printf("response %q\n", body)
 	return nil
+}
+
+// digit printing functions
+
+func PrintDigit(digit string, color int16, x int, y int, screen *gc.Window) {
+	screen.ColorOn(color)
+	width := 0
+	for _, char := range digit {
+
+		switch char {
+		case '0':
+			width += Print0(x+width, y, screen)
+			break
+		case '1':
+			width += Print1(x+width, y, screen)
+			break
+		case '2':
+			width += Print2(x+width, y, screen)
+			break
+		case '3':
+			width += Print3(x+width, y, screen)
+			break
+		case '4':
+			width += Print4(x+width, y, screen)
+			break
+		case '5':
+			width += Print5(x+width, y, screen)
+			break
+		case '6':
+			width += Print6(x+width, y, screen)
+			break
+		case '7':
+			width += Print7(x+width, y, screen)
+			break
+		case '8':
+			width += Print8(x+width, y, screen)
+			break
+		case '9':
+			width += Print9(x+width, y, screen)
+			break
+		case '.':
+			width += PrintDot(x+width, y, screen)
+			break
+		case '^':
+			width += PrintUp(x+width, y, screen)
+			break
+		case '-':
+			width += PrintDown(x+width, y, screen)
+			break
+
+		}
+	}
+
+	screen.ColorOff(color)
+
+}
+
+func Print0(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "  ___  ")
+	screen.MovePrint(y+1, x, " / _ \\ ")
+	screen.MovePrint(y+2, x, "| | | |")
+	screen.MovePrint(y+3, x, "| | | |")
+	screen.MovePrint(y+4, x, "| | | |")
+	screen.MovePrint(y+5, x, " \\___/ ")
+
+	return 7
+
+}
+
+func Print1(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, " __ ")
+	screen.MovePrint(y+1, x, "/_ |")
+	screen.MovePrint(y+2, x, " | |")
+	screen.MovePrint(y+3, x, " | |")
+	screen.MovePrint(y+4, x, " | |")
+	screen.MovePrint(y+5, x, " |_|")
+
+	return 4
+
+}
+
+func Print2(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "___   ")
+	screen.MovePrint(y+1, x, "|__ \\ ")
+	screen.MovePrint(y+2, x, "   ) |")
+	screen.MovePrint(y+3, x, "  / / ")
+	screen.MovePrint(y+4, x, " / /_ ")
+	screen.MovePrint(y+5, x, "|____|")
+
+	return 6
+}
+
+func Print3(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, " ____  ")
+	screen.MovePrint(y+1, x, "|___ \\ ")
+	screen.MovePrint(y+2, x, "  __) |")
+	screen.MovePrint(y+3, x, " |__ < ")
+	screen.MovePrint(y+4, x, " ___) |")
+	screen.MovePrint(y+5, x, "|____/ ")
+
+	return 7
+}
+
+func Print4(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, " _  _   ")
+	screen.MovePrint(y+1, x, "| || |  ")
+	screen.MovePrint(y+2, x, "| || |_ ")
+	screen.MovePrint(y+3, x, "|__   _|")
+	screen.MovePrint(y+4, x, "   | |  ")
+	screen.MovePrint(y+5, x, "   |_|  ")
+
+	return 8
+}
+
+func Print5(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, " _____ ")
+	screen.MovePrint(y+1, x, "| ____|")
+	screen.MovePrint(y+2, x, "| |__  ")
+	screen.MovePrint(y+3, x, "|___ \\ ")
+	screen.MovePrint(y+4, x, " ___) |")
+	screen.MovePrint(y+5, x, "|____/ ")
+
+	return 7
+}
+func Print6(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "   __  ")
+	screen.MovePrint(y+1, x, "  / /  ")
+	screen.MovePrint(y+2, x, " / /_  ")
+	screen.MovePrint(y+3, x, "| '_ \\ ")
+	screen.MovePrint(y+4, x, "| (_) |")
+	screen.MovePrint(y+5, x, " \\___/ ")
+
+	return 7
+}
+func Print7(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, " ______ ")
+	screen.MovePrint(y+1, x, "|____  |")
+	screen.MovePrint(y+2, x, "    / / ")
+	screen.MovePrint(y+3, x, "   / /  ")
+	screen.MovePrint(y+4, x, "  / /   ")
+	screen.MovePrint(y+5, x, " /_/    ")
+
+	return 8
+}
+func Print8(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "  ___  ")
+	screen.MovePrint(y+1, x, " / _ \\ ")
+	screen.MovePrint(y+2, x, "| (_) |")
+	screen.MovePrint(y+3, x, " > _ < ")
+	screen.MovePrint(y+4, x, "| (_) |")
+	screen.MovePrint(y+5, x, " \\___/ ")
+
+	return 7
+}
+func Print9(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "  ___  ")
+	screen.MovePrint(y+1, x, " / _ \\ ")
+	screen.MovePrint(y+2, x, "| (_) |")
+	screen.MovePrint(y+3, x, " \\__, |")
+	screen.MovePrint(y+4, x, "   / / ")
+	screen.MovePrint(y+5, x, "  /_/  ")
+
+	return 7
+}
+func PrintDot(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "   ")
+	screen.MovePrint(y+1, x, "   ")
+	screen.MovePrint(y+2, x, "   ")
+	screen.MovePrint(y+3, x, "   ")
+	screen.MovePrint(y+4, x, " _ ")
+	screen.MovePrint(y+5, x, "(_)")
+
+	return 3
+}
+
+func PrintUp(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "    ")
+	screen.MovePrint(y+1, x, "    ")
+	screen.MovePrint(y+2, x, " /\\ ")
+	screen.MovePrint(y+3, x, "|/\\|")
+	screen.MovePrint(y+4, x, "    ")
+	screen.MovePrint(y+5, x, "    ")
+
+	return 4
+}
+
+func PrintDown(x int, y int, screen *gc.Window) int {
+
+	screen.MovePrint(y+0, x, "    ")
+	screen.MovePrint(y+1, x, "    ")
+	screen.MovePrint(y+2, x, "|\\/|")
+	screen.MovePrint(y+3, x, " \\/ ")
+	screen.MovePrint(y+4, x, "    ")
+	screen.MovePrint(y+5, x, "    ")
+
+	return 4
 }
