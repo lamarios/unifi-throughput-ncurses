@@ -219,7 +219,7 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 
 	screen.Erase()
 	screen.Refresh()
-	screen.SetBackground(gc.ColorPair(BLACK))
+
 	UpdateBar(uploadBar, maxUploadPercent, maxY, BLUE)
 
 	UpdateBar(downloadBar, maxDownloadPercent, maxY, CYAN)
@@ -423,11 +423,11 @@ func PrintDigit(digit string, color int16, x int, y int, screen *gc.Window) {
 func Print0(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "  ___  ")
-	screen.MovePrint(y+1, x, " / _ \\ ")
-	screen.MovePrint(y+2, x, "| | | |")
-	screen.MovePrint(y+3, x, "| | | |")
-	screen.MovePrint(y+4, x, "| | | |")
-	screen.MovePrint(y+5, x, " \\___/ ")
+	screen.MovePrint(y+1, x, " /###\\ ")
+	screen.MovePrint(y+2, x, "|#| |#|")
+	screen.MovePrint(y+3, x, "|#| |#|")
+	screen.MovePrint(y+4, x, "|#| |#|")
+	screen.MovePrint(y+5, x, " \\###/ ")
 
 	return 7
 
@@ -436,11 +436,11 @@ func Print0(x int, y int, screen *gc.Window) int {
 func Print1(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, " __ ")
-	screen.MovePrint(y+1, x, "/_ |")
-	screen.MovePrint(y+2, x, " | |")
-	screen.MovePrint(y+3, x, " | |")
-	screen.MovePrint(y+4, x, " | |")
-	screen.MovePrint(y+5, x, " |_|")
+	screen.MovePrint(y+1, x, "/##|")
+	screen.MovePrint(y+2, x, " |#|")
+	screen.MovePrint(y+3, x, " |#|")
+	screen.MovePrint(y+4, x, " |#|")
+	screen.MovePrint(y+5, x, " |#|")
 
 	return 4
 
@@ -449,11 +449,11 @@ func Print1(x int, y int, screen *gc.Window) int {
 func Print2(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "___   ")
-	screen.MovePrint(y+1, x, "|__ \\ ")
-	screen.MovePrint(y+2, x, "   ) |")
-	screen.MovePrint(y+3, x, "  / / ")
-	screen.MovePrint(y+4, x, " / /_ ")
-	screen.MovePrint(y+5, x, "|____|")
+	screen.MovePrint(y+1, x, "|###\\ ")
+	screen.MovePrint(y+2, x, "   )#|")
+	screen.MovePrint(y+3, x, "  /#/ ")
+	screen.MovePrint(y+4, x, " /#/_ ")
+	screen.MovePrint(y+5, x, "|####|")
 
 	return 6
 }
@@ -461,11 +461,11 @@ func Print2(x int, y int, screen *gc.Window) int {
 func Print3(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, " ____  ")
-	screen.MovePrint(y+1, x, "|___ \\ ")
-	screen.MovePrint(y+2, x, "  __) |")
-	screen.MovePrint(y+3, x, " |__ < ")
-	screen.MovePrint(y+4, x, " ___) |")
-	screen.MovePrint(y+5, x, "|____/ ")
+	screen.MovePrint(y+1, x, "|####\\ ")
+	screen.MovePrint(y+2, x, "  __)#|")
+	screen.MovePrint(y+3, x, " |###< ")
+	screen.MovePrint(y+4, x, " ___)#|")
+	screen.MovePrint(y+5, x, "|####/ ")
 
 	return 7
 }
@@ -473,11 +473,11 @@ func Print3(x int, y int, screen *gc.Window) int {
 func Print4(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, " _  _   ")
-	screen.MovePrint(y+1, x, "| || |  ")
-	screen.MovePrint(y+2, x, "| || |_ ")
-	screen.MovePrint(y+3, x, "|__   _|")
-	screen.MovePrint(y+4, x, "   | |  ")
-	screen.MovePrint(y+5, x, "   |_|  ")
+	screen.MovePrint(y+1, x, "|#||#|  ")
+	screen.MovePrint(y+2, x, "|#||#|_ ")
+	screen.MovePrint(y+3, x, "|######|")
+	screen.MovePrint(y+4, x, "   |#|  ")
+	screen.MovePrint(y+5, x, "   |#|  ")
 
 	return 8
 }
@@ -485,55 +485,55 @@ func Print4(x int, y int, screen *gc.Window) int {
 func Print5(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, " _____ ")
-	screen.MovePrint(y+1, x, "| ____|")
-	screen.MovePrint(y+2, x, "| |__  ")
-	screen.MovePrint(y+3, x, "|___ \\ ")
-	screen.MovePrint(y+4, x, " ___) |")
-	screen.MovePrint(y+5, x, "|____/ ")
+	screen.MovePrint(y+1, x, "|#####|")
+	screen.MovePrint(y+2, x, "|#|__  ")
+	screen.MovePrint(y+3, x, "|####\\ ")
+	screen.MovePrint(y+4, x, " ___)#|")
+	screen.MovePrint(y+5, x, "|####/ ")
 
 	return 7
 }
 func Print6(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "   __  ")
-	screen.MovePrint(y+1, x, "  / /  ")
-	screen.MovePrint(y+2, x, " / /_  ")
-	screen.MovePrint(y+3, x, "| '_ \\ ")
-	screen.MovePrint(y+4, x, "| (_) |")
-	screen.MovePrint(y+5, x, " \\___/ ")
+	screen.MovePrint(y+1, x, "  /#/  ")
+	screen.MovePrint(y+2, x, " /#/_  ")
+	screen.MovePrint(y+3, x, "|####\\ ")
+	screen.MovePrint(y+4, x, "|#(_)#|")
+	screen.MovePrint(y+5, x, " \\###/ ")
 
 	return 7
 }
 func Print7(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, " ______ ")
-	screen.MovePrint(y+1, x, "|____  |")
-	screen.MovePrint(y+2, x, "    / / ")
-	screen.MovePrint(y+3, x, "   / /  ")
-	screen.MovePrint(y+4, x, "  / /   ")
-	screen.MovePrint(y+5, x, " /_/    ")
+	screen.MovePrint(y+1, x, "|######|")
+	screen.MovePrint(y+2, x, "    /#/ ")
+	screen.MovePrint(y+3, x, "   /#/  ")
+	screen.MovePrint(y+4, x, "  /#/   ")
+	screen.MovePrint(y+5, x, " /#/    ")
 
 	return 8
 }
 func Print8(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "  ___  ")
-	screen.MovePrint(y+1, x, " / _ \\ ")
-	screen.MovePrint(y+2, x, "| (_) |")
-	screen.MovePrint(y+3, x, " > _ < ")
-	screen.MovePrint(y+4, x, "| (_) |")
-	screen.MovePrint(y+5, x, " \\___/ ")
+	screen.MovePrint(y+1, x, " /###\\ ")
+	screen.MovePrint(y+2, x, "|#(_)#|")
+	screen.MovePrint(y+3, x, " >###< ")
+	screen.MovePrint(y+4, x, "|#(_)#|")
+	screen.MovePrint(y+5, x, " \\###/ ")
 
 	return 7
 }
 func Print9(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "  ___  ")
-	screen.MovePrint(y+1, x, " / _ \\ ")
-	screen.MovePrint(y+2, x, "| (_) |")
-	screen.MovePrint(y+3, x, " \\__, |")
-	screen.MovePrint(y+4, x, "   / / ")
-	screen.MovePrint(y+5, x, "  /_/  ")
+	screen.MovePrint(y+1, x, " /###\\ ")
+	screen.MovePrint(y+2, x, "|#(_)#|")
+	screen.MovePrint(y+3, x, " \\####|")
+	screen.MovePrint(y+4, x, "   /#/ ")
+	screen.MovePrint(y+5, x, "  /#/  ")
 
 	return 7
 }
@@ -544,31 +544,31 @@ func PrintDot(x int, y int, screen *gc.Window) int {
 	screen.MovePrint(y+2, x, "   ")
 	screen.MovePrint(y+3, x, "   ")
 	screen.MovePrint(y+4, x, " _ ")
-	screen.MovePrint(y+5, x, "(_)")
+	screen.MovePrint(y+5, x, "(#)")
 
 	return 3
 }
 
 func PrintUp(x int, y int, screen *gc.Window) int {
 
-	screen.MovePrint(y+0, x, "    ")
-	screen.MovePrint(y+1, x, "    ")
-	screen.MovePrint(y+2, x, " /\\ ")
-	screen.MovePrint(y+3, x, "|/\\|")
-	screen.MovePrint(y+4, x, "    ")
-	screen.MovePrint(y+5, x, "    ")
+	screen.MovePrint(y+0, x, "   ")
+	screen.MovePrint(y+1, x, "   ")
+	screen.MovePrint(y+2, x, " # ")
+	screen.MovePrint(y+3, x, "# #")
+	screen.MovePrint(y+4, x, "   ")
+	screen.MovePrint(y+5, x, "   ")
 
 	return 4
 }
 
 func PrintDown(x int, y int, screen *gc.Window) int {
 
-	screen.MovePrint(y+0, x, "    ")
-	screen.MovePrint(y+1, x, "    ")
-	screen.MovePrint(y+2, x, "|\\/|")
-	screen.MovePrint(y+3, x, " \\/ ")
-	screen.MovePrint(y+4, x, "    ")
-	screen.MovePrint(y+5, x, "    ")
+	screen.MovePrint(y+0, x, "   ")
+	screen.MovePrint(y+1, x, "   ")
+	screen.MovePrint(y+2, x, "# #")
+	screen.MovePrint(y+3, x, " # ")
+	screen.MovePrint(y+4, x, "   ")
+	screen.MovePrint(y+5, x, "   ")
 
 	return 4
 }
