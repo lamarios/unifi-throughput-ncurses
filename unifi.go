@@ -553,22 +553,22 @@ func PrintUp(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "   ")
 	screen.MovePrint(y+1, x, "   ")
-	screen.MovePrint(y+2, x, " # ")
-	screen.MovePrint(y+3, x, "# #")
+	screen.MovePrint(y+2, x, " /#\\ ")
+	screen.MovePrint(y+3, x, "/#/#\\")
 	screen.MovePrint(y+4, x, "   ")
 	screen.MovePrint(y+5, x, "   ")
 
-	return 4
+	return 6
 }
 
 func PrintDown(x int, y int, screen *gc.Window) int {
 
 	screen.MovePrint(y+0, x, "   ")
 	screen.MovePrint(y+1, x, "   ")
-	screen.MovePrint(y+2, x, "# #")
-	screen.MovePrint(y+3, x, " # ")
+	screen.MovePrint(y+2, x, "\\#\\#/")
+	screen.MovePrint(y+3, x, " \\#/ ")
 	screen.MovePrint(y+4, x, "   ")
 	screen.MovePrint(y+5, x, "   ")
 
-	return 4
+	return 6
 }
