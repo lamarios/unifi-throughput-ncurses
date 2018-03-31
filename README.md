@@ -18,9 +18,7 @@ or
 ./unifi-throughput -config=path_of_config_file.toml
 ```
 
-## usage
-
-
+## Usage
 
 ```
   -config string
