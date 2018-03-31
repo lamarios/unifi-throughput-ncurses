@@ -35,7 +35,8 @@ const BLACK = 5
 const ERROR_COLOR = 6
 const DEFAULT_CONFIG_FOLDER = "/.config/unifi-throughput"
 const DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_FOLDER + "/config.toml"
-const VERSION = "1.0"
+//passed by compiler
+var VERSION string
 
 func main() {
 
@@ -228,7 +229,7 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	latencyText := "Latency: " + strconv.FormatFloat(latency, 'f', 0, 64) + "ms"
 	speedText := "Speeds (mbps)"
 
-	// If we have more than 4 digits, we convert to gbps, we have time to see up to tbps //todo: remind me in 50 years
+	// If we have more than 4 digits, we convert to gbps, we have time to see up to tbps //todo: remind me in 20 years
 	if readableDownload >= 1000 || readableUpload >= 1000 {
 		readableDownload /= 1000
 		readableUpload /= 1000
