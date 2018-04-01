@@ -7,7 +7,7 @@ OS=$(go env GOOS)
 echo "Building unifi-throughput $VERSION  os:$OS arch:$ARCH"
 
 
-
+go clean
 go build -ldflags="-s -w -X main.VERSION=$VERSION" -o unifi-throughput
 #Compressing
 
