@@ -9,7 +9,7 @@ Unifi throughput is a small piece of software to monitor the throughput of a Uni
 
 ## Installation
 
-Just download the correct archive from the release page, extract it and run
+Just download the correct archive from the [release page](https://github.com/lamarios/unifi-throughput-ncurses/releases), extract it and run
 ```
 ./unifi-throughput -create-config
 ```
