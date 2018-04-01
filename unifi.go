@@ -25,6 +25,7 @@ type Configuration struct {
 	Url           string
 	UploadColor   string
 	DownloadColor string
+	UseBars       bool
 }
 
 const DOWNLOAD_COLOR = 1
@@ -35,6 +36,7 @@ const BLACK = 5
 const ERROR_COLOR = 6
 const DEFAULT_CONFIG_FOLDER = "/.config/unifi-throughput"
 const DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_FOLDER + "/config.toml"
+
 //passed by compiler
 var VERSION string
 
@@ -73,7 +75,18 @@ func CreateDefaultConfig() {
 
 	os.MkdirAll(GetDefaultConfigFolder(), os.ModePerm)
 
-	config := []byte("#Controller URL, do not add tailing /\nurl=\"https://demo.ubnt.com\"\n# Name of the site\nsite = \"default\"\n\n#credentials to login to the controller\nusername = \"superadmin\"\npassword =\"\"\n\n# Colors for the bars and text options: blue, green, yellow, magenta, cyan, red, white\nUploadColor = \"blue\"\nDownloadColor = \"cyan\"")
+	config := []byte("#Controller URL, do not add tailing /\n" +
+		"url=\"https://demo.ubnt.com\"\n" +
+		"# Name of the site" +
+		"\nsite = \"default\"\n\n" +
+		"#credentials to login to the controller\n" +
+		"username = \"superadmin\"\n" +
+		"password =\"\"\n\n" +
+		"# Colors for the bars and text options: blue, green, yellow, magenta, cyan, red, white\n" +
+		"UploadColor = \"blue\"\n" +
+		"DownloadColor = \"cyan\"\n\n" +
+		"# Usebars = true to use bar instead of circles, in case you face display issues\n" +
+		"UseBars = false")
 	err := ioutil.WriteFile(GetDefaultConfigPath(), config, 0644)
 	if err != nil {
 		fmt.Println(err)
@@ -152,7 +165,7 @@ func StartApp(configFile string) {
 		panic(err)
 	}
 
-	if err := gc.InitPair(ERROR_COLOR, gc.C_WHITE, gc.C_RED); err != nil {
+	if err := gc.InitPair(ERROR_COLOR, gc.C_WHITE, gc.C_BLACK); err != nil {
 		panic(err)
 	}
 
@@ -169,8 +182,10 @@ func StartApp(configFile string) {
 
 	stdscr.MovePrint(maxY, maxX/2, "Latency")
 
-	stdscr.Overlay(upload)
-	stdscr.Overlay(download)
+	if config.UseBars {
+		stdscr.Overlay(upload)
+		stdscr.Overlay(download)
+	}
 
 	stdscr.Refresh()
 
@@ -207,14 +222,14 @@ func GetData(config Configuration, client *http.Client, screen *gc.Window, uploa
 			maxValue = math.Max(upload, maxValue)
 			maxValue = math.Max(download, maxValue)
 
-			DisplayData(latency, upload, download, maxValue, screen, uploadBar, downloadBar);
+			DisplayData(latency, upload, download, maxValue, screen, uploadBar, downloadBar, config.UseBars);
 		}
 		time.Sleep(3 * time.Second)
 	}
 }
 
 // Display stuff on ncurses
-func DisplayData(latency float64, upload float64, download float64, maxValue float64, screen *gc.Window, uploadBar *gc.Window, downloadBar *gc.Window) {
+func DisplayData(latency float64, upload float64, download float64, maxValue float64, screen *gc.Window, uploadBar *gc.Window, downloadBar *gc.Window, useBars bool) {
 	//keeping the max value
 
 	//getting the speed in mbps
@@ -242,9 +257,23 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	screen.Erase()
 	screen.Refresh()
 
-	UpdateBar(uploadBar, maxUploadPercent, maxY, UPLOAD_COLOR)
+	if useBars {
+		UpdateBar(uploadBar, maxUploadPercent, maxY, UPLOAD_COLOR)
 
-	UpdateBar(downloadBar, maxDownloadPercent, maxY, DOWNLOAD_COLOR)
+		UpdateBar(downloadBar, maxDownloadPercent, maxY, DOWNLOAD_COLOR)
+	} else {
+		uploadAngle := int((maxUploadPercent / 100) * 180)
+		downloadAngle := int(( (100 - maxDownloadPercent) / 100) * 180)
+
+		radius := (math.Min(float64(maxY), float64(maxX)) - 2) / 2
+		screen.ColorOn(UPLOAD_COLOR)
+		DrawCircle(maxY/2, maxX/2-1, radius, 90, 90+uploadAngle, 2, screen)
+		screen.ColorOff(UPLOAD_COLOR)
+
+		screen.ColorOn(DOWNLOAD_COLOR)
+		DrawCircle(maxY/2, maxX/2+1, radius, -90+downloadAngle, 90, 2, screen)
+		screen.ColorOff(DOWNLOAD_COLOR)
+	}
 
 	screen.MovePrint(maxY/2+7, maxX/2-len(latencyText)/2, latencyText)
 	screen.MovePrint(maxY/2-7, maxX/2-len(speedText)/2, speedText)
@@ -256,6 +285,20 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	PrintDigit(downloadText, DOWNLOAD_TEXT_COLOR, maxX/2-(len(uploadText)*6)/2, maxY/2, screen)
 
 	screen.Refresh()
+
+}
+
+func DrawCircle(y int, x int, radius float64, angleFrom int, angleTo int, width float64, window *gc.Window) {
+
+	for i := angleFrom; i < angleTo; i++ {
+		for j := radius; j < radius+width; j++ {
+			radAngle := float64(i) * 0.0174533
+			sin, cos := math.Sincos(radAngle)
+			cY := j * sin;
+			cX := (j + 10) * cos;
+			window.MovePrint(y+int(cY), x+int(cX), "X")
+		}
+	}
 
 }
 
