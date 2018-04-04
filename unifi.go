@@ -388,11 +388,15 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 
 	data := json.([]interface{})[2].(map[string]interface{})
 
-	latency := data["latency"].(float64)
-	upload := data["tx_bytes-r"].(float64)
-	download := data["rx_bytes-r"].(float64)
+	if data["latency"] != nil && data["tx_bytes-r"] != nil && data["rx_bytes-r"] != nil {
+		latency := data["latency"].(float64)
+		upload := data["tx_bytes-r"].(float64)
+		download := data["rx_bytes-r"].(float64)
 
-	return latency, upload, download, nil
+		return latency, upload, download, nil
+	}else{
+		return 0,0,0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong")
+	}
 
 }
 
