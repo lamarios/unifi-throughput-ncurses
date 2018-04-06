@@ -3,6 +3,10 @@
 Unifi throughput is a small piece of software to monitor the throughput of a Unifi controller in a terminal
 
 
+![](https://i.imgur.com/GwyhKLg.png?raw=true)
+
+![](https://i.imgur.com/U0PnujC.png?raw=true)
+
 ## Dependencies
 
 - ncurse needs to be installed
@@ -24,6 +28,7 @@ or
 ./unifi-throughput -config=path_of_config_file.toml
 ```
 
+
 ## Usage
 
 ```
@@ -35,3 +40,5 @@ or
     	Show version
 
 ```
+
+You can also press any key to switch from circle to bar display mode

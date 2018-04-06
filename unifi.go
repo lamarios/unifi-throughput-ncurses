@@ -36,6 +36,8 @@ const BLACK = 5
 const ERROR_COLOR = 6
 const DEFAULT_CONFIG_FOLDER = "/.config/unifi-throughput"
 const DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_FOLDER + "/config.toml"
+const BAR_WIDTH = 10
+const CIRCLE_WIDTH = 2
 
 //passed by compiler
 var VERSION string
@@ -182,28 +184,22 @@ func StartApp(configFile string) {
 
 	stdscr.MovePrint(maxY, maxX/2, "Latency")
 
-	if config.UseBars {
-		stdscr.Overlay(upload)
-		stdscr.Overlay(download)
-	}
 
 	stdscr.Refresh()
 
-	go GetData(config, client, stdscr, upload, download)
+	go GetData(&config, client, stdscr, upload, download)
 
-	//loop := true
-	//for loop  {
-	//	switch char := stdscr.GetChar(); char{
-	//	default:
-	//		fmt.Println(char)
-	//	}
-	//}
-	stdscr.GetChar()
-
+	loop := true
+	for loop  {
+		switch char := stdscr.GetChar(); char{
+		default:
+			config.UseBars = !config.UseBars
+		}
+	}
 }
 
 // Starts the actual logic of the application
-func GetData(config Configuration, client *http.Client, screen *gc.Window, uploadBar *gc.Window, downloadBar *gc.Window) {
+func GetData(config *Configuration, client *http.Client, screen *gc.Window, uploadBar *gc.Window, downloadBar *gc.Window) {
 	var maxValue float64 = 0
 
 	if err := login(config.Url, config.Username, config.Password, client); err != nil {
@@ -258,20 +254,20 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 	screen.Refresh()
 
 	if useBars {
-		UpdateBar(uploadBar, maxUploadPercent, maxY, UPLOAD_COLOR)
+		UpdateBar(screen, maxUploadPercent, 1, UPLOAD_COLOR)
 
-		UpdateBar(downloadBar, maxDownloadPercent, maxY, DOWNLOAD_COLOR)
+		UpdateBar(screen, maxDownloadPercent, maxX-BAR_WIDTH-1, DOWNLOAD_COLOR)
 	} else {
 		uploadAngle := int((maxUploadPercent / 100) * 180)
 		downloadAngle := int(( (100 - maxDownloadPercent) / 100) * 180)
 
 		radius := (math.Min(float64(maxY), float64(maxX)) - 2) / 2
 		screen.ColorOn(UPLOAD_COLOR)
-		DrawCircle(maxY/2, maxX/2-1, radius, 90, 90+uploadAngle, 2, screen)
+		DrawCircle(maxY/2, maxX/2-1, radius, 90, 90+uploadAngle, CIRCLE_WIDTH, screen)
 		screen.ColorOff(UPLOAD_COLOR)
 
 		screen.ColorOn(DOWNLOAD_COLOR)
-		DrawCircle(maxY/2, maxX/2+1, radius, -90+downloadAngle, 90, 2, screen)
+		DrawCircle(maxY/2, maxX/2+1, radius, -90+downloadAngle, 90, CIRCLE_WIDTH, screen)
 		screen.ColorOff(DOWNLOAD_COLOR)
 	}
 
@@ -313,21 +309,29 @@ func ShowErrorScreen(screen *gc.Window, err error) {
 }
 
 // Update the bar to set the color the size and the borders
-func UpdateBar(bar *gc.Window, percent float64, maxY int, color int16) {
+func UpdateBar(screen *gc.Window, percent float64, x int, color int16) {
+	maxY,_ := screen.MaxYX()
 
 	newUploadHeight, newUploadY := CalculateNewHeightAndY(percent, maxY)
-	_, uploadWidth := bar.MaxYX()
-	_, uploadX := bar.YX()
-	bar.Resize(newUploadHeight, uploadWidth)
 
-	bar.ColorOn(color)
-	bar.MoveWindow(newUploadY, uploadX)
-	bar.Border(gc.ACS_VLINE, gc.ACS_VLINE, gc.ACS_HLINE, gc.ACS_HLINE,
-		gc.ACS_ULCORNER, gc.ACS_URCORNER, gc.ACS_LLCORNER, gc.ACS_LRCORNER)
-	bar.Color(color)
-	bar.ColorOff(color)
-	bar.SetBackground(gc.ColorPair(color))
-	bar.Refresh()
+	if newUploadHeight == 0 {
+		newUploadHeight = 1
+	}
+
+	if newUploadY == maxY{
+		newUploadY -= 1
+	}
+
+	screen.ColorOn(color)
+
+	//fmt.Printf("new Y: %v   %v/%v \n", newUploadY, newUploadHeight, maxY)
+
+	for i := newUploadY; i <= newUploadY + newUploadHeight; i++ {
+		for j := 0; j < BAR_WIDTH; j++{
+			screen.MovePrint(i, x+j, "X")
+		}
+	}
+	screen.ColorOff(color)
 
 }
 
