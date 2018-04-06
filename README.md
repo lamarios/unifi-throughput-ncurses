@@ -17,7 +17,7 @@ Just download the correct archive from the [release page](https://github.com/lam
 ```
 ./unifi-throughput -create-config
 ```
-to generate the default configuration file in ~/.config/unifi-throughput
+to generate the default configuration file in ~/.config/unifi-throughput and edit the newly created config
 
 then 
 ```
