@@ -9,7 +9,7 @@ Unifi throughput is a small piece of software to monitor the throughput of a Uni
 
 ## Dependencies
 
-- ncurse needs to be installed
+- libncurses 5 needs to be installed
 
 ## Installation
 
