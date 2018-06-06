@@ -33,9 +33,9 @@ or
 
 ```
   -config string
-    	External configuration file location (default "/home/pi/.config/unifi-throughput/config.toml")
+    	External configuration file location (default "~/.config/unifi-throughput/config.toml")
   -create-config
-    	Create the default config file /home/pi/.config/unifi-throughput/config.toml THIS WILL OVERWRITE YOUR CURRENT CONFIG AT THE DEFAULT LOCATION
+    	Create the default config file ~/.config/unifi-throughput/config.toml THIS WILL OVERWRITE YOUR CURRENT CONFIG AT THE DEFAULT LOCATION
   -version
     	Show version
 
