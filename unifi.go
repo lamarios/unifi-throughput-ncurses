@@ -1,21 +1,22 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-	"net/http"
-	"io/ioutil"
+	"crypto/tls"
 	"encoding/json"
-	"time"
+	"errors"
+	"flag"
+	"fmt"
 	"github.com/BurntSushi/toml"
-	"math"
 	gc "github.com/rthornton128/goncurses"
-	"strconv"
+	"io/ioutil"
+	"math"
+	"net/http"
 	"net/http/cookiejar"
 	"os"
-	"flag"
 	"os/user"
-	"errors"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Configuration struct {
@@ -26,6 +27,7 @@ type Configuration struct {
 	UploadColor   string
 	DownloadColor string
 	UseBars       bool
+	BypassSsl     bool
 }
 
 const DOWNLOAD_COLOR = 1
@@ -84,6 +86,8 @@ func CreateDefaultConfig() {
 		"#credentials to login to the controller\n" +
 		"username = \"superadmin\"\n" +
 		"password =\"\"\n\n" +
+		"#Bypass SSL certificate\n" +
+		"bypassSsl = false\n\n" +
 		"# Colors for the bars and text options: blue, green, yellow, magenta, cyan, red, white\n" +
 		"UploadColor = \"blue\"\n" +
 		"DownloadColor = \"cyan\"\n\n" +
@@ -121,9 +125,15 @@ func MapColor(colorText string) int16 {
 func StartApp(configFile string) {
 	config := openConfig(configFile)
 
-	cookieJar, _ := cookiejar.New(nil);
+	cookieJar, _ := cookiejar.New(nil)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.BypassSsl},
+	}
+
 	client := &http.Client{
-		Jar: cookieJar,
+		Jar:       cookieJar,
+		Transport: tr,
 	}
 
 	stdscr, _ := gc.Init()
@@ -173,25 +183,24 @@ func StartApp(configFile string) {
 
 	sideMargin := 3
 	upload, err := gc.NewWindow(maxHeight, maxWidth, 0, sideMargin)
-	if (err != nil ) {
+	if err != nil {
 		panic(err)
 	}
 
 	download, err := gc.NewWindow(maxHeight, maxWidth, 0, maxX-maxWidth-sideMargin)
-	if (err != nil ) {
+	if err != nil {
 		panic(err)
 	}
 
 	stdscr.MovePrint(maxY, maxX/2, "Latency")
-
 
 	stdscr.Refresh()
 
 	go GetData(&config, client, stdscr, upload, download)
 
 	loop := true
-	for loop  {
-		switch char := stdscr.GetChar(); char{
+	for loop {
+		switch char := stdscr.GetChar(); char {
 		default:
 			config.UseBars = !config.UseBars
 		}
@@ -218,7 +227,7 @@ func GetData(config *Configuration, client *http.Client, screen *gc.Window, uplo
 			maxValue = math.Max(upload, maxValue)
 			maxValue = math.Max(download, maxValue)
 
-			DisplayData(latency, upload, download, maxValue, screen, uploadBar, downloadBar, config.UseBars);
+			DisplayData(latency, upload, download, maxValue, screen, uploadBar, downloadBar, config.UseBars)
 		}
 		time.Sleep(3 * time.Second)
 	}
@@ -259,7 +268,7 @@ func DisplayData(latency float64, upload float64, download float64, maxValue flo
 		UpdateBar(screen, maxDownloadPercent, maxX-BAR_WIDTH-1, DOWNLOAD_COLOR)
 	} else {
 		uploadAngle := int((maxUploadPercent / 100) * 180)
-		downloadAngle := int(( (100 - maxDownloadPercent) / 100) * 180)
+		downloadAngle := int(((100 - maxDownloadPercent) / 100) * 180)
 
 		radius := (math.Min(float64(maxY), float64(maxX)) - 2) / 2
 		screen.ColorOn(UPLOAD_COLOR)
@@ -290,8 +299,8 @@ func DrawCircle(y int, x int, radius float64, angleFrom int, angleTo int, width 
 		for j := radius; j < radius+width; j++ {
 			radAngle := float64(i) * 0.0174533
 			sin, cos := math.Sincos(radAngle)
-			cY := j * sin;
-			cX := (j + 10) * cos;
+			cY := j * sin
+			cX := (j + 10) * cos
 			window.MovePrint(y+int(cY), x+int(cX), "X")
 		}
 	}
@@ -310,7 +319,7 @@ func ShowErrorScreen(screen *gc.Window, err error) {
 
 // Update the bar to set the color the size and the borders
 func UpdateBar(screen *gc.Window, percent float64, x int, color int16) {
-	maxY,_ := screen.MaxYX()
+	maxY, _ := screen.MaxYX()
 
 	newUploadHeight, newUploadY := CalculateNewHeightAndY(percent, maxY)
 
@@ -318,7 +327,7 @@ func UpdateBar(screen *gc.Window, percent float64, x int, color int16) {
 		newUploadHeight = 1
 	}
 
-	if newUploadY == maxY{
+	if newUploadY == maxY {
 		newUploadY -= 1
 	}
 
@@ -326,8 +335,8 @@ func UpdateBar(screen *gc.Window, percent float64, x int, color int16) {
 
 	//fmt.Printf("new Y: %v   %v/%v \n", newUploadY, newUploadHeight, maxY)
 
-	for i := newUploadY; i <= newUploadY + newUploadHeight; i++ {
-		for j := 0; j < BAR_WIDTH; j++{
+	for i := newUploadY; i <= newUploadY+newUploadHeight; i++ {
+		for j := 0; j < BAR_WIDTH; j++ {
 			screen.MovePrint(i, x+j, "X")
 		}
 	}
@@ -398,8 +407,8 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 		download := data["rx_bytes-r"].(float64)
 
 		return latency, upload, download, nil
-	}else{
-		return 0,0,0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong")
+	} else {
+		return 0, 0, 0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong")
 	}
 
 }
