@@ -8,7 +8,15 @@ Unifi throughput is a small piece of software to monitor the throughput of a Uni
 ![](https://i.imgur.com/U0PnujC.png?raw=true)
 
 ## Dependencies
+
+### X84
 - libncurses 6 needs to be installed, if you have a different version of ncurses, you'll need to build it yourself.
+
+### Raspberry Pi
+- libncurses
+```shell
+sudo apt-get install libncurses5-dev libncursesw5-dev
+```
 
 ## Installation
 
