@@ -80,12 +80,12 @@ func CreateDefaultConfig() {
 	os.MkdirAll(GetDefaultConfigFolder(), os.ModePerm)
 
 	config := []byte("#Controller URL, do not add tailing /\n" +
-		"url=\"https://demo.ubnt.com\"\n" +
+		"url=\"https://demo.ui.com\"\n" +
 		"# Name of the site" +
 		"\nsite = \"default\"\n\n" +
 		"#credentials to login to the controller\n" +
 		"username = \"superadmin\"\n" +
-		"password =\"\"\n\n" +
+		"password =\"superadmin\"\n\n" +
 		"#Bypass SSL certificate\n" +
 		"bypassSsl = false\n\n" +
 		"# Colors for the bars and text options: blue, green, yellow, magenta, cyan, red, white\n" +
@@ -396,7 +396,7 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 	json, isset := i.(map[string]interface{})["data"]
 
 	if !isset || len(json.([]interface{})) < 3 {
-		return 0, 0, 0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong")
+		return 0, 0, 0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong: " + string(body[:]))
 	}
 
 	data := json.([]interface{})[2].(map[string]interface{})
@@ -408,7 +408,7 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 
 		return latency, upload, download, nil
 	} else {
-		return 0, 0, 0, errors.New("couldn't read the data from the controller response, check your credentials or the site name might be wrong")
+		return 0, 0, 0, errors.New("couldn't read the data from the controller response, do you have a USG running ?")
 	}
 
 }
@@ -416,14 +416,16 @@ func getInfo(url string, site string, client *http.Client) (float64, float64, fl
 // login to the controller
 func login(url string, username string, password string, client *http.Client) error {
 
-	payload := strings.NewReader("{\n\t\"username\": \"" + username + "\",\n\t\"password\":\"" + password + "\"\n}")
-	resp, err := client.Post(url+"/api/login", "application/json", payload)
-	if err != nil {
-		// handle error
-		return err
-	}
+	if len(username) > 0 && len(password) > 0 {
+		payload := strings.NewReader("{\n\t\"username\": \"" + username + "\",\n\t\"password\":\"" + password + "\"\n}")
+		resp, err := client.Post(url+"/api/login", "application/json", payload)
+		if err != nil {
+			// handle error
+			return err
+		}
 
-	defer resp.Body.Close()
+		defer resp.Body.Close()
+	}
 
 	return nil
 }
