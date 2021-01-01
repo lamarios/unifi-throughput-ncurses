@@ -8,7 +8,7 @@ Unifi throughput is a small piece of software to monitor the throughput of a Uni
 ![](https://i.imgur.com/U0PnujC.png?raw=true)
 
 ## Dependencies
-- libncurses 6 needs to be installed, if you have an older version of ncurses, you'll need to build it yourself.
+- libncurses 6 needs to be installed, if you have a different version of ncurses, you'll need to build it yourself.
 
 ## Installation
 
