@@ -28,7 +28,10 @@ or
 ```
 
 ## Build
-
+### Dependencies
+ - Golang
+ - libncurses
+### Make
 ```shell
 git clone https://github.com/lamarios/unifi-throughput-ncurses
 cd unifi-throughput-ncurses
