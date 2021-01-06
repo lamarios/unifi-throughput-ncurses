@@ -1,0 +1,4 @@
+github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
+github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/rthornton128/goncurses v0.0.0-20200912145604-92ce130a4336 h1:kUHPGIDbUaFjJMofwCrebM9VwvZsbXGMXcoj7t/GPbE=
+github.com/rthornton128/goncurses v0.0.0-20200912145604-92ce130a4336/go.mod h1:UJ0xTyAoIn5cLIoYfHypjSrlXPqVzJfjPSWj3nr9qmc=

@@ -1,0 +1,9 @@
+kind: pipeline
+name: default
+
+steps:
+ - name: build-x86
+   image: golang
+   commands:
+   - apt update
+
