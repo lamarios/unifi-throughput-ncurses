@@ -38,8 +38,9 @@ steps:
   - name: package & publish
     commands:
       - make package
-      - curl -s "https://api.github.com/repos/lamarios/unifi-throughput-ncurses/releases/tags/${DRONE_TAG}" |  jq .id > release_id
-      - cat release_id
+      - export RELEASE=$(curl -s "https://api.github.com/repos/lamarios/unifi-throughput-ncurses/releases/tags/${DRONE_TAG}" |  jq .id)
+      - echo $RELEASE
+      - export FILE=$(ls unifi-throughput-*.tar.gz)
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
