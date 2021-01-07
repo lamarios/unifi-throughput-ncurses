@@ -17,14 +17,6 @@ steps:
       - make package
     when:
       event: tag
-  - name: publish
-    image: plugins/github-release
-    settings:
-      api_key:
-        from_secret: github_token
-      files: unifi-throughput-*.tar.gz
-    when:
-      event: tag
 ---
 kind: pipeline
 type: ssh
@@ -41,16 +33,17 @@ steps:
   - name: build
     commands:
       - make
-  - name: package
+  - name: package & publish
     commands:
       - make package
-    when:
-      event: tag
-  - name: publish
-    image: plugins/github-release
-    settings:
-      api_key:
+      - curl -s "https://api.github.com/repos/lamarios/unifi-throughput-ncurses/releases/tags/${DRONE_TAG}" |  jq .id > release_id
+      - cat release_id
+      - curl --location --request POST "https://uploads.github.com/repos/lamarios/unifi-throughput-ncurses/releases/$(cat release_id)/assets?access_token=$(GITHUB_TOKEN)&name=$(ls unifi-throughput-*.tar.gz)" \
+        --header 'Accept: application/vnd.github.v3+json' \
+        --header 'Content-Type: image/svg+xml' \
+        --data-binary "@./$(ls unifi-throughput-*.tar.gz)"
+    environment:
+      GITHUB_TOKEN:
         from_secret: github_token
-      files: unifi-throughput-*.tar.gz
     when:
       event: tag
