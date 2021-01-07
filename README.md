@@ -1,3 +1,6 @@
+
+[![Build Status](https://drone.ftpix.com/api/badges/lamarios/unifi-throughput-ncurses/status.svg)](https://drone.ftpix.com/lamarios/unifi-throughput-ncurses)
+
 # Unifi throughput
 
 Unifi throughput is a small piece of software to monitor the throughput of a Unifi controller in a terminal
