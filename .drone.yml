@@ -9,6 +9,22 @@ server:
     from_secret: pi_password
 
 steps:
- - name: build-rpi
+ - name: build
    commands:
    - make
+---
+kind: pipeline
+type: ssh
+name: build-arch-linux
+
+server:
+  host: server.lan
+  user:
+    from_secret: server_user
+  password:
+    from_secret: server_password
+
+steps:
+  - name: build
+    commands:
+      - make
