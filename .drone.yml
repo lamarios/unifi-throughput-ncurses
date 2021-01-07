@@ -1,9 +1,14 @@
 kind: pipeline
-name: default
+type: ssh
+name: build-pi
+
+server:
+  host: pi.lan
+  user: pi
+  password:
+    from_secret: pi_password
 
 steps:
- - name: build-x86
-   image: golang
+ - name: build-rpi
    commands:
-   - apt update
-
+   - make
