@@ -17,7 +17,9 @@ steps:
       - make package
     when:
       event: tag
+
 ---
+
 kind: pipeline
 type: ssh
 name: build-arch-linux
