@@ -9,14 +9,22 @@ server:
     from_secret: pi_password
 
 steps:
- - name: build
-   commands:
-   - make
- - name: package
-   commands:
-     - make package
-   when:
-     branch: master
+  - name: build
+    commands:
+      - make
+  - name: package
+    commands:
+      - make package
+    when:
+      event: tag
+  - name: publish
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      files: unifi-throughput-*.tar.gz
+    when:
+      event: tag
 ---
 kind: pipeline
 type: ssh
@@ -37,4 +45,12 @@ steps:
     commands:
       - make package
     when:
-      branch: master
+      event: tag
+  - name: publish
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      files: unifi-throughput-*.tar.gz
+    when:
+      event: tag

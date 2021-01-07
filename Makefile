@@ -1,6 +1,6 @@
 arch := $(shell go env GOARCH)
 os := $(shell go env GOOS)
-version := 1.5
+version := 1.6
 
 build:
 	 CGO_CFLAGS_ALLOW=".*" CGO_LDFLAGS_ALLOW=".*" go mod download
