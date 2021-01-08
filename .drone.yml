@@ -44,6 +44,8 @@ steps:
       - git add PKGBUILD .SRCINFO
       - git commit -m "update version"
       - git push
+    when:
+      event: tag
   - name: package
     commands:
       - make package
