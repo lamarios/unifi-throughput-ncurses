@@ -36,7 +36,7 @@ steps:
     commands:
       - make
   - name: update AUR
-    command:
+    commands:
       - git clone ssh://aur@aur.archlinux.org/unifi-throughput-ncurses.git aur
       - cd aur
       - makepkg -s
