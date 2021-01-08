@@ -23,13 +23,25 @@ sudo apt-get install libncurses5-dev libncursesw5-dev
 
 ## Installation
 
+### Arch linux
+
+The application is available on the AUR
+
+```shell
+yay -S unifi-throughput-ncurses
+```
+
+### Others
+
 Just download the correct archive from the [release page](https://github.com/lamarios/unifi-throughput-ncurses/releases/latest), extract it and run
+
+## First run
 ```
 ./unifi-throughput -create-config
 ```
 to generate the default configuration file in ~/.config/unifi-throughput and edit the newly created config
 
-then 
+then
 ```
 ./unifi-throughput
 ```
