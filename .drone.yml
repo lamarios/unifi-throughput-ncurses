@@ -12,7 +12,7 @@ steps:
   - name: build
     commands:
       - make
-  - name: git hub release
+  - name: github release
     commands:
       - make package
       - ./upload_release.sh
@@ -39,6 +39,15 @@ steps:
   - name: build
     commands:
       - make
+  - name: github release
+    commands:
+      - make package
+      - ./upload_release.sh
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    when:
+      event: tag
   - name: update AUR
     commands:
       - git clone ssh://aur@aur.archlinux.org/unifi-throughput-ncurses.git aur
@@ -48,14 +57,5 @@ steps:
       - git add PKGBUILD .SRCINFO
       - git commit -m "update version"
       - git push
-    when:
-      event: tag
-  - name: git hub release
-    commands:
-      - make package
-      - ./upload_release.sh
-    environment:
-      GITHUB_TOKEN:
-        from_secret: github_token
     when:
       event: tag
