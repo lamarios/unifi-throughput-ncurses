@@ -12,9 +12,13 @@ steps:
   - name: build
     commands:
       - make
-  - name: package
+  - name: git hub release
     commands:
       - make package
+      - ./upload_release.sh
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
     when:
       event: tag
 
@@ -46,7 +50,7 @@ steps:
       - git push
     when:
       event: tag
-  - name: package
+  - name: git hub release
     commands:
       - make package
       - ./upload_release.sh
